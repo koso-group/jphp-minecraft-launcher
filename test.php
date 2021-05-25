@@ -1,20 +1,3 @@
-# Minecraft Launcher for JPHP DevelNext
-## jphp-minecraft-launcher
-
-Minecraft Launcher modeule for parse and run classic version.json from Mojang LAUNCHERMETA 
-
-## Featuers  ✨Magic ✨
-- Run Minecraft
-- Spoofing META URL's
-- Downloads and Update resources
-
-
-## Getting Started  ✨Magic ✨
- - add "ZIP 1.0" package to project
- - insert 'kosogroup/minecraft/launcher' to SRC root
- - copy this code
- - Enjoy!
-```php
 <?php
 
 $launchOptions = array(
@@ -43,4 +26,3 @@ $launchOptions = array(
 );
 
 (new TrophyLauncher()).launch($launchOptions);
-```
