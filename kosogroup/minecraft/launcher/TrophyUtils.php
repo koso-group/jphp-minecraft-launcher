@@ -85,6 +85,7 @@ class TrophyUtils
             if(!isset($library['downloads']) || !isset($library['downloads']['classifiers'])) continue;
             if(!$this->_fetchRule($library)) continue;
 
+            // only for windows // to-do fix to mac/linux
             $natives[] = $library['downloads']['classifiers']['natives-windows'];
         }
 
@@ -160,8 +161,11 @@ class TrophyUtils
 
     public function downloadUpdateAA($collections, $target, $dir, $unzip = false)
     {
+        $meta_current = 0;
         foreach($collections as $downloadable)
         {
+            $meta_current++;
+
             if(!isset($downloadable)) return;
 
             $explode = explode('/', $downloadable['path']);
@@ -172,18 +176,25 @@ class TrophyUtils
             $dd = false;
             if(!fs::exists($filePath))
             {
+                $meta_stage = 'downloading';
                 $this->_download($downloadable['url'], $path, $name, true, $target);
                 $dd = true;
             }
             else
+            {
                 if(!$this->_checkHash($filePath, $downloadable['sha1']))
                 {
+                    $meta_stage = 'downloading/invalid_hashing';
                     $this->_download($downloadable['url'], $path, $name, true, $target);
                     $dd = true;
                 }
+            }
+                
 
             if($unzip && $dd)
             {   
+                $meta_stage = 'unzipping';
+
                 try
                 {
                     new ZipFile($filePath)->unpack($dir);
@@ -194,6 +205,16 @@ class TrophyUtils
                 }
                 
             }
+
+            $meta_stage = 'done';
+
+            $_meta = array(
+                'target' => $target,
+                'stage' => $meta_stage,
+                'current' => $meta_current,
+                'of' => count($collections)
+            );
+            $this->_launcher->__eventEmit('downloadUpdateAA', $_meta);
         }
 
         
@@ -204,8 +225,7 @@ class TrophyUtils
 
     private function _download($link, $dir, $name, $retry, $target)
     {
-        $log = [$link, $dir, $name, $target];
-        var_dump($log);
+
         $_totalBytes = 0;
         $_receivedBytes = 0;
 
@@ -228,7 +248,7 @@ class TrophyUtils
             $math = ($_totalBytes - $_receivedBytes);
             if(!($math > $bufferSize)) $bufferSize = $math;
 
-            //да еще хуй знает как байтбуфер клить в PHP, вариант конечно хороший это сразу писать в файл
+            //да еще хуй знает как байтбуфер клеить в PHP, вариант конечно хороший это сразу писать в файл
             $buffer[] = $inputStream->read($bufferSize);
 
             $_receivedBytes += $bufferSize;
@@ -239,7 +259,15 @@ class TrophyUtils
         
         $closureCallback = function ($progress, $bytes) use ($_totalBytes, $url, $name)
         {
-            var_dump($name);
+            //////////////////////////////////////////////////???????????????????????????????????????????????????????
+            $_meta = array(
+                'progress' => $progress,
+                'bytes' => $bytes,
+                'total' => $_totalBytes,
+                'url' => $url,
+                'name' => $name
+            );
+            $this->_launcher->__eventEmit('_downloadCallback', $_meta);
         };
 
         try
@@ -251,13 +279,22 @@ class TrophyUtils
         }
         catch(IOException $exception)
         {
-            var_dump($exception);
             if($retry) $this->_download($link, $dir, $name, false, $target);
         }        
     }
 
     private function _checkHash($file, $hash) : bool
     {
-        return ((new File($file))->hash('SHA-1') == $hash);
+
+        $calculated_hash = new File($file)->hash('SHA-1');
+
+        $_meta = array(
+            'file' => $file,
+            'hash' => $hash,
+            'calculated_hash' => $calculated_hash
+        );
+        $this->_launcher->__eventEmit('_checkHash', $_meta);
+
+        return ($calculated_hash == $hash);
     }
 }

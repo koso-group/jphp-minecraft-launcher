@@ -9,12 +9,21 @@ use php\lang\Thread;
 use kosogroup\minecraft\launcher\TrophyParser;
 use kosogroup\minecraft\launcher\TrophyUtils;
 
-class TrophyLauncher 
+class TrophyLauncher //extends Thread
 {
     private $_launchOptions = [];
 
     private $_parser;
     private $_utils;
+
+    private $_launchThread = null;
+    private $_process = null;
+
+    public function __eventEmit($target, $meta)
+    {
+        if(isset($this->getLaunchOptions()['eventEmiter']))
+            $this->getLaunchOptions()['eventEmiter']($target, $meta);
+    }
 
     public function getLaunchOptions()
     {
@@ -24,54 +33,55 @@ class TrophyLauncher
     public function launch($launchOptions)
     {
         $this->_launchOptions = $launchOptions;
-        
-
-        //$this->launchOptions[''];
-
 
         $this->_parser = new TrophyParser($this);
         $this->_utils = new TrophyUtils($this, $this->_parser);
 
-        
-        $minecraftJSON = $this->_parser->getMinecraftJSON();
-        $updateResult = $this->_utils->downloadUpdate($minecraftJSON);
-        //var_dump($updateResult);
-        //var_dump($minecraftJSON);
+        $this->_launchThread = new Thread(function() use($this)
+        {
+            //$this->launchOptions[''];
 
+            $minecraftJSON = $this->_parser->getMinecraftJSON();
+            $updateResult = $this->_utils->downloadUpdate($minecraftJSON);
 
+            $launchArguments = $this->_parser->getLaunchArguments($minecraftJSON, $updateResult);
+            $launchArguments = array_merge($launchArguments['jvm'], $launchArguments['game']);
 
-        $launchArguments = $this->_parser->getLaunchArguments($minecraftJSON, $updateResult);
-        $launchArguments = array_merge($launchArguments['jvm'], $launchArguments['game']);       
-        var_dump(implode(' ', $launchArguments));
-        
-        return $this->runMinecraft($launchArguments);
+            $this->_process = $this->runMinecraft($launchArguments);
+        });
+        $this->_launchThread->Start();
+
+        return $this;
     }
+
+    public function Stop()
+    {
+        $this->_launchThread->Stop();
+    }
+
+
+    
 
     public function runMinecraft($launchArguments) : Process
     {
-        $process = new Process(array_merge(['java'], $launchArguments));
+        $process = new Process(array_merge([($this->getLaunchOptions()['javaPath'])], $launchArguments));
 
         $process = $process->start();
 
         $thread = new Thread(function() use ($process)
         {
-            $process->getInput()->eachLine(function($line){
-                uiLater(function() use ($line) {
-                    var_dump($line);
+            $process->getInput()
+                ->eachLine(function($line) {
+                    $this->__eventEmit("std::out", $line);
                 });
-            });
 
-            $process->getError()->eachLine(function($line){
-                uiLater(function() use ($line) {
-                    var_dump($line);
+            $process->getError()
+                ->eachLine(function($line) {
+                    $this->__eventEmit("err::out", $line);
                 });
-            });
         });
         $thread->start();
         
-        //$process->getOutput();
-        //$process->getError();
-
         return $process;
     }
 }
