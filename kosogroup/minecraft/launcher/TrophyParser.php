@@ -18,6 +18,9 @@ class TrophyParser
             'meta' => 'https://launchermeta.mojang.com'
         );
 
+        if(isset($this->_launcher->getLaunchOptions()['url']))
+            $this->_url = array_merge($this->_url, $this->_launcher->getLaunchOptions()['url']);
+
     }
 
     public static function getMinecraftVersionManifest($metaUrl)
@@ -27,9 +30,14 @@ class TrophyParser
 
     public function getMinecraftJSON($version = null)
     {
-        if(!$version) $version = $this->_launcher->getLaunchOptions()['version'];
-        //if(!$version) $version = ($this->_launcher->getLaunchOptions())['version']; // синтасический парсер в DN к такому не говтов
-        
+        if(!$version)
+        {
+            if(isset($this->_launcher->getLaunchOptions()['version']['customJSON']))
+                return json_decode($this->_launcher->getLaunchOptions()['version']['customJSON'], true);
+
+            $version = $this->_launcher->getLaunchOptions()['version'];
+        }
+
         $meta = static::getMinecraftVersionManifest($this->_url['meta']);
         foreach($meta['versions'] as $metaVersion)
             if($metaVersion['id'] == $version['number'])

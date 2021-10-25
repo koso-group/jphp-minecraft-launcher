@@ -3,12 +3,14 @@
 $launchOptions = array(
     'url' => array (
         'meta' =>       'https://launchermeta.mojang.com',
+        //'meta' =>       'https://launchermeta.minetrophy.ru',
         'resource' =>   'https://resources.download.minecraft.net'
     ),            
     'javaPath' =>       'java', //если не указывать внешнюю JAVA то будет тянутся JAVA из DN (во всяком случае в среде разработки было так)
     'launcherPath' =>   './minecraft',
     'version' => array(
         //'jsonDownload' => false,
+        //'customJSON' => file_get_contents("https://launchermeta.minetrophy.ru/mc/game/patched/legacy"),
         'number' =>     '1.16.5',
         'type' =>       'release'
     ),
