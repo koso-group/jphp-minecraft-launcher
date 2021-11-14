@@ -56,6 +56,7 @@ class TrophyUtils
 
     public function downloadUpdate($minecraftJSON)  
     {
+        $this->_launcher->__eventEmit('_downloadBegin', []);
         $launchOptions = $this->_launcher->getLaunchOptions();
 
         //
@@ -148,6 +149,7 @@ class TrophyUtils
         //
         //
 
+        $this->_launcher->__eventEmit('_downloadEnd', []);
         return array(
             'dir' => array(
                 'version' => $dirVersion,

@@ -56,7 +56,7 @@ class TrophyLauncher //extends Thread
 
     public function Stop()
     {
-        $this->_launchThread->Stop();
+        $this->_launchThread->interrupt();
     }
 
 
