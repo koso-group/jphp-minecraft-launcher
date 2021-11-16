@@ -11,11 +11,13 @@ Minecraft Launcher modeule for parse and run classic version.json from Mojang LA
 
 ## Getting Started  ✨Magic ✨
  - add "ZIP 1.0" package to project
- - insert 'kosogroup/minecraft/launcher' to SRC root
+ - insert files to 'kosogroup/minecraft/launcher/core' to SRC root
  - copy this code
  - Enjoy!
 ```php
 <?php
+
+use kosogroup\minecraft\launcher\core\TrophyLauncher;
 
 $launchOptions = array(
     'url' => array (
@@ -42,5 +44,5 @@ $launchOptions = array(
     )
 );
 
-(new TrophyLauncher()).launch($launchOptions);
+(new TrophyLauncher())->launch($launchOptions);
 ```

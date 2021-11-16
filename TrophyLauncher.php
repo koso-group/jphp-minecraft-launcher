@@ -1,13 +1,13 @@
 <?php
 
-namespace kosogroup\minecraft\launcher;
+namespace kosogroup\minecraft\launcher\core;
 
 //devenext uses
 use php\lang\Process;
 use php\lang\Thread;
 
-use kosogroup\minecraft\launcher\TrophyParser;
-use kosogroup\minecraft\launcher\TrophyUtils;
+use kosogroup\minecraft\launcher\core\TrophyParser;
+use kosogroup\minecraft\launcher\core\TrophyUtils;
 
 class TrophyLauncher //extends Thread
 {
@@ -37,7 +37,7 @@ class TrophyLauncher //extends Thread
         $this->_parser = new TrophyParser($this);
         $this->_utils = new TrophyUtils($this, $this->_parser);
 
-        $this->_launchThread = new Thread(function() use($this)
+        $this->_launchThread = new Thread(function()
         {
             //$this->launchOptions[''];
 

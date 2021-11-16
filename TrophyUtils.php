@@ -1,14 +1,14 @@
 <?php
 
-namespace kosogroup\minecraft\launcher;
+namespace kosogroup\minecraft\launcher\core;
 
 //devenext uses
 use std;
 use php\compress\ZipFile;
 use php\io\IOException;
 
-use kosogroup\minecraft\launcher\TrophyLauncher;
-use kosogroup\minecraft\launcher\TrophyParser;
+use kosogroup\minecraft\launcher\core\TrophyLauncher;
+use kosogroup\minecraft\launcher\core\TrophyParser;
 
 class TrophyUtils 
 {

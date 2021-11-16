@@ -1,8 +1,8 @@
 <?php
 
-namespace kosogroup\minecraft\launcher;
+namespace kosogroup\minecraft\launcher\core;
 
-use kosogroup\minecraft\launcher\TrophyLauncher;
+use kosogroup\minecraft\launcher\core\TrophyLauncher;
 
 class TrophyParser 
 {
