@@ -3,6 +3,7 @@
 namespace kosogroup\minecraft\launcher\core;
 
 use kosogroup\minecraft\launcher\core\TrophyLauncher;
+use kosogroup\minecraft\launcher\core\TrophyVersion;
 
 class TrophyParser 
 {
@@ -37,11 +38,13 @@ class TrophyParser
 
             $version = $this->_launcher->getLaunchOptions()['version'];
         }
+        //$meta = static::getMinecraftVersionManifest($this->_url['meta']);
+        //foreach($meta['versions'] as $metaVersion)
+        //    if($metaVersion['id'] == $version['number'])
+        //        return json_decode(file_get_contents($metaVersion['url']), true);
 
-        $meta = static::getMinecraftVersionManifest($this->_url['meta']);
-        foreach($meta['versions'] as $metaVersion)
-            if($metaVersion['id'] == $version['number'])
-                return json_decode(file_get_contents($metaVersion['url']), true);
+        $version = TrophyVersion::getByNumber($version['number']);
+        return json_decode(file_get_contents($version['url'], true));
             
         return null;
     }

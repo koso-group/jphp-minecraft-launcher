@@ -199,7 +199,7 @@ class TrophyUtils
 
                 try
                 {
-                    new ZipFile($filePath)->unpack($dir);
+                    (new ZipFile($filePath))->unpack($dir);
                 }
                 catch(IOException $exception)
                 {
@@ -288,7 +288,7 @@ class TrophyUtils
     private function _checkHash($file, $hash) : bool
     {
 
-        $calculated_hash = new File($file)->hash('SHA-1');
+        $calculated_hash = (new File($file))->hash('SHA-1');
 
         $_meta = array(
             'file' => $file,
