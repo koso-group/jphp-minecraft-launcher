@@ -17,6 +17,7 @@ class TrophyUtils
 
     private $_url = array();
 
+
     function __construct(TrophyLauncher $launcher, TrophyParser $parser)
     {
         $this->_launcher = $launcher;
@@ -25,6 +26,16 @@ class TrophyUtils
         $this->_url = array(
             'resource' => 'https://resources.download.minecraft.net'
         );
+    }
+    
+    private $_isDownloadInterrupt = false;
+    public function downloadInterrupt()
+    {
+        $this->_isDownloadInterrupt = true;
+    }
+    public function isDownloadInterrupt()
+    {
+        return $this->_isDownloadInterrupt;
     }
 
     private function _resolveDir($dir)
@@ -166,9 +177,12 @@ class TrophyUtils
         $meta_current = 0;
         foreach($collections as $downloadable)
         {
+            // break or return ? hm...
+            if($this->isDownloadInterrupt()) break;
+            
             $meta_current++;
 
-            if(!isset($downloadable)) return;
+            if(!isset($downloadable)) continue;
 
             $explode = explode('/', $downloadable['path']);
             $name = array_pop($explode);
@@ -178,7 +192,6 @@ class TrophyUtils
             $dd = false;
             if(!fs::exists($filePath))
             {
-                $meta_stage = 'downloading';
                 $this->_download($downloadable['url'], $path, $name, true, $target);
                 $dd = true;
             }
@@ -186,7 +199,6 @@ class TrophyUtils
             {
                 if(!$this->_checkHash($filePath, $downloadable['sha1']))
                 {
-                    $meta_stage = 'downloading/invalid_hashing';
                     $this->_download($downloadable['url'], $path, $name, true, $target);
                     $dd = true;
                 }
@@ -195,7 +207,6 @@ class TrophyUtils
 
             if($unzip && $dd)
             {   
-                $meta_stage = 'unzipping';
 
                 try
                 {
@@ -208,19 +219,14 @@ class TrophyUtils
                 
             }
 
-            $meta_stage = 'done';
 
             $_meta = array(
                 'target' => $target,
-                'stage' => $meta_stage,
                 'current' => $meta_current,
                 'of' => count($collections)
             );
             $this->_launcher->__eventEmit('downloadUpdateAA', $_meta);
         }
-
-        
-
 
         return $collections;
     }
@@ -231,7 +237,6 @@ class TrophyUtils
         $_totalBytes = 0;
         $_receivedBytes = 0;
 
-
         $url = new URL($link);
         $connection = $url->openConnection();
         
@@ -241,23 +246,7 @@ class TrophyUtils
 
         $buffer = null;
         $bufferSize = 8192;
-        //ебаный рот этого казино
-        //while($_receivedBytes = $inputStream->read())  { }
-        // read(int) принимает количество скачиваемых байт, возвращает порцию данных на это самое количество
-        /*while(!( $_receivedBytes >= $_totalBytes )) // wtf
-        {
-            // неужели было так сложно запилить человческие стримы из java, сейчас бы небыло это ебатни математической
-            $math = ($_totalBytes - $_receivedBytes);
-            if(!($math > $bufferSize)) $bufferSize = $math;
-
-            //да еще хуй знает как байтбуфер клеить в PHP, вариант конечно хороший это сразу писать в файл
-            $buffer[] = $inputStream->read($bufferSize);
-
-            $_receivedBytes += $bufferSize;
-        }
-        //*/
-        //$wtf = implode($buffer, '');
-
+ 
         
         $closureCallback = function ($progress, $bytes) use ($_totalBytes, $url, $name)
         {

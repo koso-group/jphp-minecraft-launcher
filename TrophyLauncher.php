@@ -44,20 +44,30 @@ class TrophyLauncher //extends Thread
             $minecraftJSON = $this->_parser->getMinecraftJSON();
             $updateResult = $this->_utils->downloadUpdate($minecraftJSON);
 
+            if($this->_launchThread->isInterrupted()) return $this->interruptEvent();
             $launchArguments = $this->_parser->getLaunchArguments($minecraftJSON, $updateResult);
             $launchArguments = array_merge($launchArguments['jvm'], $launchArguments['game']);
-
+            
+            if($this->_launchThread->isInterrupted()) return $this->interruptEvent();
             $this->_process = $this->runMinecraft($launchArguments);
         });
         $this->_launchThread->Start();
 
         return $this;
     }
+    
+    private function interruptEvent()
+    {
+        $this->__eventEmit('_interrupt', []);
+    }
 
     public function Stop()
     {
         $this->_launchThread->interrupt();
-    }
+        if($this->_utils) $this->_utils->downloadInterrupt();
+        
+        if($this->_process) $this->_process->destroy();
+    }    
 
 
     
