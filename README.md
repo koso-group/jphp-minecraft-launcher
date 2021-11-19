@@ -1,12 +1,12 @@
 # Minecraft Launcher for JPHP DevelNext
 ## jphp-minecraft-launcher
 
-Minecraft Launcher modeule for parse and run classic version.json from Mojang LAUNCHERMETA 
+Minecraft Launcher module for parse and run classic version.json from Mojang LAUNCHERMETA 
 
 ## Featuers  ✨Magic ✨
 - Run Minecraft
 - Spoofing META URL's
-- Downloads and Update resources
+- Download and Update resources
 
 
 ## Getting Started  ✨Magic ✨
@@ -18,6 +18,9 @@ Minecraft Launcher modeule for parse and run classic version.json from Mojang LA
 <?php
 
 use kosogroup\minecraft\launcher\core\TrophyLauncher;
+use kosogroup\minecraft\launcher\core\TrophyVersion;
+
+//TrophyVersion::DeployMeta("https://launchermeta.minetrophy.ru");
 
 $launchOptions = array(
     'url' => array (
