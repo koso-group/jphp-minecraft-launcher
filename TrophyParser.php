@@ -44,7 +44,7 @@ class TrophyParser
         //        return json_decode(file_get_contents($metaVersion['url']), true);
 
         $version = TrophyVersion::getByNumber($version['number']);
-        return json_decode(file_get_contents($version['url'], true));
+        return json_decode(file_get_contents($version['url']), true);
             
         return null;
     }

@@ -20,7 +20,7 @@ class TrophyVersion
 
     private static function getVersionManifest()
     {
-        return json_decode(file_get_contents(static::$METAURI, true));
+        return json_decode(file_get_contents(static::$METAURI . "/mc/game/version_manifest.json"), true);
     }
 
     public static function getAll()
