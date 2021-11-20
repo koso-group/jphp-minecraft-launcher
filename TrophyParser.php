@@ -63,7 +63,7 @@ class TrophyParser
         $replaceFields = array(
             '${auth_player_name}' =>    $launchOptions['auth']['username'],
             '${version_name}' =>        $launchOptions['version']['number'],
-            '${game_directory}' =>      'version/' . $launchOptions['version']['number'],
+            '${game_directory}' =>      $launchOptions['launcherPath'] . '\/version/' . $launchOptions['version']['number'],
             '${assets_root}' =>         $updateResults['dir']['assets'],
             '${game_assets}' =>         $updateResults['dir']['assets'], // 1.5.2 compability
             '${assets_index_name}' =>   $minecraftJSON['assetIndex']['id'],

@@ -172,60 +172,68 @@ class TrophyUtils
         );
     }
 
+    private $_meta_current = 0;
     public function downloadUpdateAA($collections, $target, $dir, $unzip = false)
     {
-        $meta_current = 0;
+        // 4 threads - stable
+        // 6
+        // 8 threads - unstable
+        if($target == "assets") $threadPool = ThreadPool::createFixed(6);
+        
+        $this->_meta_current = 0;
         foreach($collections as $downloadable)
-        {
-            // break or return ? hm...
-            if($this->isDownloadInterrupt()) break;
-            
-            $meta_current++;
-
+        {           
             if(!isset($downloadable)) continue;
+            
+            $closure = function () use ($downloadable, $collections, $target, $dir, $unzip)
+            {            
+                if($this->isDownloadInterrupt()) return;
 
-            $explode = explode('/', $downloadable['path']);
-            $name = array_pop($explode);
-            $path =  $dir . '/' . implode('/', $explode);
-
-            $filePath = $dir . '/' . $downloadable['path'];
-            $dd = false;
-            if(!fs::exists($filePath))
-            {
-                $this->_download($downloadable['url'], $path, $name, true, $target);
-                $dd = true;
-            }
-            else
-            {
-                if(!$this->_checkHash($filePath, $downloadable['sha1']))
+                $explode = explode('/', $downloadable['path']);
+                $name = array_pop($explode);
+                $path =  $dir . '/' . implode('/', $explode);
+    
+                $filePath = $dir . '/' . $downloadable['path'];
+                $dd = false;
+                if(!fs::exists($filePath))
                 {
                     $this->_download($downloadable['url'], $path, $name, true, $target);
                     $dd = true;
                 }
-            }
-                
-
-            if($unzip && $dd)
-            {   
-
-                try
+                else
                 {
-                    (new ZipFile($filePath))->unpack($dir);
+                    if(!$this->_checkHash($filePath, $downloadable['sha1']))
+                    {
+                        $this->_download($downloadable['url'], $path, $name, true, $target);
+                        $dd = true;
+                    }
                 }
-                catch(IOException $exception)
-                {
-
+    
+                if($unzip && $dd)
+                {   
+                    try
+                    {
+                        (new ZipFile($filePath))->unpack($dir);
+                    }
+                    catch(IOException $exception) { }
                 }
-                
-            }
+    
+    
+                $_meta = array(
+                    'target' => $target,
+                    'current' => $this->_meta_current++,
+                    'of' => count($collections)
+                );
+                $this->_launcher->__eventEmit('downloadUpdateAA', $_meta);
+            };
+            
+            ($target == "assets") ? $threadPool->execute($closure) : $closure();
+        }
 
-
-            $_meta = array(
-                'target' => $target,
-                'current' => $meta_current,
-                'of' => count($collections)
-            );
-            $this->_launcher->__eventEmit('downloadUpdateAA', $_meta);
+        if($target == "assets")
+        {
+            $threadPool->shutdown();
+            while (!$threadPool->isTerminated());
         }
 
         return $collections;
